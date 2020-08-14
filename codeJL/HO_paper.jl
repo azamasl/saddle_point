@@ -73,6 +73,8 @@ function alg2(zt,eps,T,fun,sp,First_Order)
         x = zh[1:n]
         y = zh[n+1:n+m]
         F = [fun.∇xL(x,y); -fun.∇yL(x,y)]
+        #println("norm F(hat z) = ")
+        #display(LinearAlgebra.norm(F))
         #solving the argmin in (14), assuming D is the squared_norm2
 
         if First_Order==1 #the reason this update doesn't exactly look like (12) is in (14) they use D(z,zt), instead of D(z,zh)
