@@ -1,39 +1,6 @@
-# The solvers in this file are assuming that the Hessian (Jacobian) is constant. See sp_function.jl for the function definiton
-function EGM(x,y,obj,eta,dummy,dummy2,max_it,prt, inpt)
-    println("\n############ Extera Gradient Method ###############")
-    if inpt==1
-        println("Renewing the initial point")
-        x = randn(n)
-        y = randn(m)
-    end
-    val, ngx, ngy =0,0,0
-    iter=0
-    normF=LinearAlgebra.norm(obj.∇xL(x,y)) + LinearAlgebra.norm(obj.∇yL(x,y))
-    normFAll=[]
-    while ( normF> tol ) && iter < max_it
-        xk = x -eta*obj.∇xL(x,y)
-        yk = y +eta*obj.∇yL(x,y)
-
-        x= x -eta*obj.∇xL(xk,yk)
-        y= y +eta*obj.∇yL(xk,yk)
-
-        val =obj.L(x,y)
-        ngx = LinearAlgebra.norm(obj.∇xL(x,y))
-        ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        append!(normFAll, normF)
-        normF = ngx + ngy
-        iter=iter+1
-        if prt==1
-            println("L = $val")
-            println("|∇xL| = $ngx")
-            println("|∇yL| = $ngy")
-            println("iter $iter")
-        end
-    end
-    return x,y,iter,normFAll, val, ngx, ngy
-end
-
-#######################################
+# Some of the solvers in this file are assuming that the Hessian (Jacobian) is constant. See sp_function.jl for the function definiton
+"Stepsize smaller than 1e-8 is too small"
+stepsize_tol = 1e-8
 
 function Newton_method(x,y,obj,sp)
     println("\n############ Newton Method ###############")
@@ -76,7 +43,7 @@ function Resolvent_alg(x,y,obj,gamma,sp)# gamma is the fixed stepsize
 
     eye = Matrix{Float64}(I, size(nablaF))
     iter=0
-    ngz = LinearAlgebra.norm(obj.∇xL(x,y)) + LinearAlgebra.norm(obj.∇yL(x,y))
+    #ngz = (LinearAlgebra.norm(obj.∇xL(x,y))^2 + LinearAlgebra.norm(obj.∇yL(x,y)^2)^0.5
     while (ngz > tol ) && iter < 5*1e2
         z = [x;y]
         F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
@@ -95,9 +62,76 @@ function Resolvent_alg(x,y,obj,gamma,sp)# gamma is the fixed stepsize
 end
 
 #######################################
+function Armijo_ls(x,y,obj, F, normF, dir, c1)
+    beta = 0.5
+    inner_max_it = 30
+    t = 1
+    dir_x = dir[1:n]
+    dir_y = dir[n+1:n+m]
+    x_p = x +t*dir_x
+    y_p = y +t*dir_y
+    F_p = [obj.∇xL(x_p,y_p); -obj.∇yL(x_p,y_p)]
+    normF_p = LinearAlgebra.norm(F_p)
+    "NOTE: I picked the RHS in the condition aribtrarily!"
+    RHS = c1*normF
+    println("Right hand side is =$RHS")
+    in_it = 0
+
+    while  normF -  normF_p < RHS && in_it < inner_max_it
+        println("t = $t")
+        LHS = normF -  normF_p
+        #println("The left hand side  =$LHS")
+        t = beta*t
+        x_p = x +t*dir_x
+        y_p = y +t*dir_y
+        F_p = [obj.∇xL(x_p,y_p); -obj.∇yL(x_p,y_p)]
+        normF_p = LinearAlgebra.norm(F_p)
+        in_it = in_it + 1
+    end
+    return t
+end
+#######################################
+function EGM(x,y,obj,eta,dummy,max_it,prt, inpt, use_ls)
+    println("############ Extera Gradient Method ###############")
+    if inpt==1
+        println("Renewing the initial point")
+        x = randn(n)
+        y = randn(m)
+    end
+    val, ngx, ngy =0,0,0
+    iter=0
+    F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+    normF=LinearAlgebra.norm(F)
+    normFAll=[]
+    while ( normF> tol ) && iter < max_it
+        xk = x -eta*obj.∇xL(x,y)
+        yk = y +eta*obj.∇yL(x,y)
+
+        x= x -eta*obj.∇xL(xk,yk)
+        y= y +eta*obj.∇yL(xk,yk)
+
+        F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+        append!(normFAll, normF)
+        normF = LinearAlgebra.norm(F)
+
+        val =obj.L(x,y)
+        ngx = LinearAlgebra.norm(obj.∇xL(x,y))
+        ngy = LinearAlgebra.norm(obj.∇yL(x,y))
+        iter=iter+1
+        if prt==1
+            println("L = $val")
+            println("|∇xL| = $ngx")
+            println("|∇yL| = $ngy")
+            println("iter $iter")
+        end
+    end
+    return x,y,iter,normFAll, val, ngx, ngy
+end
+
+#######################################
+
 "Looks like the bad updating is not working for us. So I omitied from the below function"
-function Broyden(x,y,obj,gam,sp, M_opt,itNum, prt,inpt)# gamma is the fixed stepsize
-    gam = 1
+function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0
     println("############### Broyden's method (good)#####################")
     if inpt==1
@@ -110,53 +144,67 @@ function Broyden(x,y,obj,gam,sp, M_opt,itNum, prt,inpt)# gamma is the fixed step
     H = eye
 
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-    normF=LinearAlgebra.norm(obj.∇xL(x,y)) + LinearAlgebra.norm(obj.∇yL(x,y))
+    F_old = F
+    normF=LinearAlgebra.norm(F)
     normFAll=[]
     while ( normF> tol ) && iter < itNum
         z = [x;y]
         p = -H*F
-        s = gam*p
-        z = z+s
-        x = z[1:n]
-        y = z[n+1:n+m]
-        F_old = F
-        F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-        Y = F - F_old # Y is y in my notes
-        # if M_opt==1
+        if(use_ls ==1)
+            gam = Armijo_ls(x,y,obj,F,normF,p,c1)
+            if gam >= stepsize_tol
+                s = gam*p
+                z = z+s
+                x = z[1:n]
+                y = z[n+1:n+m]
+                F_old = F
+                F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+                Y = F - F_old # Y is y in my notes
+                append!(normFAll, normF)
+                normF = LinearAlgebra.norm(F)
+             else # null step
+                println(" null step")
+                s = p
+                z_temp = z+s
+                x_temp = z_temp[1:n]
+                y_temp = z_temp[n+1:n+m]
+                F_temp = [obj.∇xL(x_temp,y_temp); -obj.∇yL(x_temp,y_temp)]
+                Y = F_temp - F_old
+                append!(normFAll, normF)
+            end
+        end
+
         stH = s'*H
         H = H + ((s-H*Y)*stH)/(stH*Y)
-        # else
-        #     H = H + ((s-H*Y)*Y')/(Y'*Y)
-        # end
+
+        #H = H + ((s-H*Y)*Y')/(Y'*Y) %bad update
+
+
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
         ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        append!(normFAll, normF)
-        normF = ngx + ngy
+        nx = LinearAlgebra.norm(x)
+        ny = LinearAlgebra.norm(y)
+        normH = LinearAlgebra.norm(H)
+
         iter=iter+1
         if prt==1
             println("L = $val")
             println("|∇xL| = $ngx")
             println("|∇yL| = $ngy")
+            println("|x| = $nx")
+            println("|y| = $ny")
+            println("|H^{-1}| = $normH")
             println("iter $iter")
         end
     end
     return x,y,iter,normFAll, val, ngx, ngy
 
 end
-
-
 #######################################
-function secantUpdate_alg(x,y,obj,gama,sp, Mopt, itNum,prt,inpt)# gamma is the fixed stepsize
-    gama = 1
+function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0
-    if Mopt==1
-        println("################ Using Secant Updating with M = I")
-    elseif Mopt==2
-        println("################ Using Secant Updating with M = 0.5(D+D')")
-    else
-        println("################ Using Secant Updating with M = 0.5(D_+ + D_+')")
-    end
+    println("################ Using Secant Updating with M = I")
     if inpt==1
         println("Renewing the initial point")
         x = randn(n)
@@ -174,46 +222,47 @@ function secantUpdate_alg(x,y,obj,gama,sp, Mopt, itNum,prt,inpt)# gamma is the f
     D = eye
 
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-    normF=LinearAlgebra.norm(obj.∇xL(x,y)) + LinearAlgebra.norm(obj.∇yL(x,y))
+    F_old = F
+    normF=LinearAlgebra.norm(F)
     normFAll=[]
     while ( normF> tol ) && iter < itNum
         z = [x;y]
-        #normD = LinearAlgebra.norm(D)
         H = pinv(D)
-        #normH = LinearAlgebra.norm(H)
-        #println("normD = $normD")
-        #println("normH = $normH")
         p = -H*F
-        s = gama*p
-        z = z+s
-        x = z[1:n]
-        y = z[n+1:n+m]
-        F_old = F
-        F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-        Y = F - F_old # Y is y in my notes
-        r = Y - D*s # here Ds is just gamma*F_old
-        if Mopt==1
-            " Assuming M = I:"
-            norms2 = LinearAlgebra.norm(s)^2
-            "The following two expresion are identical, one is using r the other is using  Y-Ds"
-            #D = D+(r*s'+(J*s)*(r'*J)-((s'*J*r)*(J*s*s'))/norms2)/norms2
-            D = D+ (Y*s' + J*s*Y'*J-D*s*s' -J*s*s'*D'*J -(s'*J*Y-s'*J*D*s)*J*s*s'/norms2)/norms2
-        elseif Mopt==2
-            "Assuming M = 0.5(D+D'):"
-            M = 0.5*(D+D')
-            norms2 = (s'*M*s)
-            D = D+(r*s'*M +M*(J*s)*(r'*J)-((s'*J*r)*(M*(J*s)*(s'*M)))/norms2)/norms2
-            #D = D + (Y*(s'*M)+M*(J*s)*(Y'*J) -D*s*s'*M -M*J*s*s'*D'*J -(s'*J*Y -s'*J*D*s)*(M*J*s*s'*M)/norms2)/norms2
 
-        else
-            " Assuming M = 0.5(D_+ + D_+'):"
+        if(use_ls ==1)
+            gama = Armijo_ls(x,y,obj,F,normF,p,c1)
+            if gama >= stepsize_tol
+                s = gama*p
+                z = z+s
+                x = z[1:n]
+                y = z[n+1:n+m]
+                F_old = F
+                F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+                Y = F - F_old # Y is y in my notes
+                append!(normFAll, normF)
+                normF = LinearAlgebra.norm(F)
+             else # null step
+                println(" null step")
+                s = p
+                z_temp = z+s
+                x_temp = z_temp[1:n]
+                y_temp = z_temp[n+1:n+m]
+                F_temp = [obj.∇xL(x_temp,y_temp); -obj.∇yL(x_temp,y_temp)]
+                Y = F_temp - F_old
+                append!(normFAll, normF)
+            end
         end
+
+        r = Y - D*s # here Ds is just gamma*F_old
+        norms2 = LinearAlgebra.norm(s)^2
+        "The following two expresion are identical, one is using r the other is using  Y-Ds"
+        #D = D+(r*s'+(J*s)*(r'*J)-((s'*J*r)*(J*s*s'))/norms2)/norms2
+        D = D+ (Y*s' + J*s*Y'*J-D*s*s' -J*s*s'*D'*J -(s'*J*Y-s'*J*D*s)*J*s*s'/norms2)/norms2
 
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
         ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        append!(normFAll, normF)
-        normF = ngx + ngy
         iter=iter+1
         if prt==1
             println("L = $val")
@@ -243,7 +292,7 @@ function secantUpdate_extra_grad_alg(x,y,obj,gamma,sp, itNum)# gamma is the fixe
     yk = y +gamma*obj.∇yL(x,y)
     Fk = [obj.∇xL(xk,yk) ; -obj.∇yL(xk,yk)]
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-    normF = LinearAlgebra.norm(obj.∇xL(x,y)) + LinearAlgebra.norm(obj.∇yL(x,y))
+    normF = LinearAlgebra.norm(F)
     while (normF > tol ) && iter < itNum
         z = [x;y]
         #Instead using gradeint of (x,y) use (xk,yk)
@@ -272,3 +321,7 @@ function secantUpdate_extra_grad_alg(x,y,obj,gamma,sp, itNum)# gamma is the fixe
     end
     return x,y,iter, normFAll, val, ngx, ngy
 end
+
+
+###############################Line Search methods#############
+###############################################################
