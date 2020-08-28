@@ -15,9 +15,9 @@ include("solvers.jl")
     #n,m: size of the problem, x \in R^n, y \in R^m
     #stepsize: stepsize in solver 3
     #tol: gradient tolerance
-    ran_seed=937#15
-    prob_type=0
-    m,n = 89,90
+    ran_seed=4632#15
+    prob_type=1
+    m,n = 189,90
     ###################################
     Random.seed!(ran_seed);
 

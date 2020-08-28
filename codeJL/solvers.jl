@@ -72,13 +72,12 @@ function Armijo_ls(x,y,obj, F, normF, dir, c1)
     y_p = y +t*dir_y
     F_p = [obj.∇xL(x_p,y_p); -obj.∇yL(x_p,y_p)]
     normF_p = LinearAlgebra.norm(F_p)
-    "NOTE: I picked the RHS in the condition aribtrarily!"
+    "NOTE: I picked the RHS in the 1st condition aribtrarily!"
     RHS = c1*normF
-    println("Right hand side is =$RHS")
+    #println("Right hand side is =$RHS")
     in_it = 0
 
     while  normF -  normF_p < RHS && in_it < inner_max_it
-        println("t = $t")
         LHS = normF -  normF_p
         #println("The left hand side  =$LHS")
         t = beta*t
@@ -91,8 +90,12 @@ function Armijo_ls(x,y,obj, F, normF, dir, c1)
     return t
 end
 #######################################
-function EGM(x,y,obj,eta,dummy,max_it,prt, inpt, use_ls)
+function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls)
+    nablaF = [sp.B  sp.A'
+            -sp.A    sp.C]
+    eta  = 1/LinearAlgebra.norm(nablaF)
     println("############ Extera Gradient Method ###############")
+    println("EGM is using inverse of the Lipschitz constant for stepsize.")
     if inpt==1
         println("Renewing the initial point")
         x = randn(n)
@@ -153,6 +156,9 @@ function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls)# gamma is the fixed ste
         if(use_ls ==1)
             gam = Armijo_ls(x,y,obj,F,normF,p,c1)
             if gam >= stepsize_tol
+                if prt==1
+                    println("t = $gam")
+                end
                 s = gam*p
                 z = z+s
                 x = z[1:n]
@@ -163,7 +169,9 @@ function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls)# gamma is the fixed ste
                 append!(normFAll, normF)
                 normF = LinearAlgebra.norm(F)
              else # null step
-                println(" null step")
+                if prt==1
+                    println("null step")
+                end
                 s = p
                 z_temp = z+s
                 x_temp = z_temp[1:n]
@@ -233,6 +241,9 @@ function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the
         if(use_ls ==1)
             gama = Armijo_ls(x,y,obj,F,normF,p,c1)
             if gama >= stepsize_tol
+                if prt==1
+                    println("t = $gam")
+                end
                 s = gama*p
                 z = z+s
                 x = z[1:n]
@@ -243,7 +254,9 @@ function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the
                 append!(normFAll, normF)
                 normF = LinearAlgebra.norm(F)
              else # null step
-                println(" null step")
+                 if prt==1
+                     println("null step")
+                 end
                 s = p
                 z_temp = z+s
                 x_temp = z_temp[1:n]

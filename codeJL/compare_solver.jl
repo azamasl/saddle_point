@@ -5,7 +5,7 @@ using LinearAlgebra, Convex, Random,CPUTime, Plots
 include("problem_settings.jl")
 
 "compare 1: Sec&Broy, 2:Sec&EGM"
-compId = 1
+compId = 2
 c1 = 1e-4#Armijo parameter
 do_ls = 1# 1: do line search, 2: use constant stepsize
 stepsize = 0.01
