@@ -15,9 +15,20 @@ include("solvers.jl")
     #n,m: size of the problem, x \in R^n, y \in R^m
     #stepsize: stepsize in solver 3
     #tol: gradient tolerance
-    ran_seed=4632#15
+
+    ran_seed=2243#15
     prob_type=1
-    m,n = 189,90
+    m,n = 69,23
+
+    # On this Sec_inv returns NAN
+    # ran_seed=2243#15
+    # prob_type=0
+    # m,n = 69,23
+
+    # for the following setting sec and sec_inv are identical.
+    # ran_seed=221543#15
+    # prob_type=1
+    # m,n = 29,20
     ###################################
     Random.seed!(ran_seed);
 

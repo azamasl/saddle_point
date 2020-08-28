@@ -242,7 +242,7 @@ function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the
             gama = Armijo_ls(x,y,obj,F,normF,p,c1)
             if gama >= stepsize_tol
                 if prt==1
-                    println("t = $gam")
+                    println("t = $gama")
                 end
                 s = gama*p
                 z = z+s
@@ -271,7 +271,10 @@ function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the
         norms2 = LinearAlgebra.norm(s)^2
         "The following two expresion are identical, one is using r the other is using  Y-Ds"
         #D = D+(r*s'+(J*s)*(r'*J)-((s'*J*r)*(J*s*s'))/norms2)/norms2
-        D = D+ (Y*s' + J*s*Y'*J-D*s*s' -J*s*s'*D'*J -(s'*J*Y-s'*J*D*s)*J*s*s'/norms2)/norms2
+        E = (Y*s' + J*s*Y'*J-D*s*s' -J*s*s'*D'*J -(s'*J*Y-s'*J*D*s)*J*s*s'/norms2)/norms2
+        #rankE = rank(E, rtol=1e-10)
+        #println("Secant update rank = $rankE")
+        D = D+ E
 
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
@@ -286,6 +289,109 @@ function secantUpdate_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the
     end
     return x,y,iter,normFAll, val, ngx, ngy
 end
+
+
+#######################################
+function secantShermanWoodbury_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the fixed stepsize
+    val, ngx, ngy =0,0,0
+    println("################ Using Secant Updating with Sherman Woodbury Identity with M = I")
+    if inpt==1
+        println("Renewing the initial point")
+        x = randn(n)
+        y = randn(m)
+    end
+
+    eye1 = Matrix{Float64}(I, size(sp.B))
+    eye2 = Matrix{Float64}(I, size(sp.C))
+    zeroBlock = zeros(size(sp.A))
+    sizezeroBlock = size(sp.A)
+    J = [eye1       zeroBlock'
+        zeroBlock      -eye2]
+    eye = Matrix{Float64}(I, size(J))
+    iter=0
+    #D = eye
+    H = eye
+    F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+    F_old = F
+    normF=LinearAlgebra.norm(F)
+    normFAll=[]
+    while ( normF> tol ) && iter < itNum
+        z = [x;y]
+        p = -H*F
+
+        if(use_ls ==1)
+            gama = Armijo_ls(x,y,obj,F,normF,p,c1)
+            if gama >= stepsize_tol
+                if prt==1
+                    println("t = $gama")
+                end
+                s = gama*p
+                z = z+s
+                x = z[1:n]
+                y = z[n+1:n+m]
+                F_old = F
+                F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
+                Y = F - F_old # Y is y in my notes
+                append!(normFAll, normF)
+                normF = LinearAlgebra.norm(F)
+             else # null step
+                if prt==1
+                    println("null step")
+                end
+                gama=1
+                s = gama*p
+                z_temp = z+s
+                x_temp = z_temp[1:n]
+                y_temp = z_temp[n+1:n+m]
+                F_temp = [obj.∇xL(x_temp,y_temp); -obj.∇yL(x_temp,y_temp)]
+                Y = F_temp - F_old
+                append!(normFAll, normF)
+            end
+        end
+
+        #r = Y - D*s # here Ds is just gamma*F_old
+        "since Ds=-stepsize*F_old we get"
+        r = Y +gama*F_old
+        ns2 = LinearAlgebra.norm(s)^2
+        Js = J*s
+        Jr = J*r
+        α = s'*Jr
+        a = r/α - Js/ns2
+        Ainv = H - (H*Js*Jr'*H)/(ns2 + Jr'*(H*Js))
+        H = Ainv - (Ainv*a*s'*Ainv)/(ns2/α + s'*Ainv*a)
+
+        val =obj.L(x,y)
+        ngx = LinearAlgebra.norm(obj.∇xL(x,y))
+        ngy = LinearAlgebra.norm(obj.∇yL(x,y))
+        iter=iter+1
+        if prt==1
+            println("L = $val")
+            println("|∇xL| = $ngx")
+            println("|∇yL| = $ngy")
+            println("iter $iter")
+        end
+    end
+    return x,y,iter,normFAll, val, ngx, ngy
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #######################################
 function secantUpdate_extra_grad_alg(x,y,obj,gamma,sp, itNum)# gamma is the fixed stepsize
