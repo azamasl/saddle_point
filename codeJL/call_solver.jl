@@ -3,15 +3,15 @@
 # Calling an indivitual solver
 using LinearAlgebra, Convex, Random,CPUTime, Plots
 include("problem_settings.jl")
-solver = 6
+solver = 7
 c1 = 1e-4#Armijo parameter
 do_ls = 1# 1: do line search, 2: use constant stepsize
 stepsize = 0.01
-max_it = 100#0.5*1e3
+max_it = 10#0.5*1e3
 prt = 1 # 0 don't print grad norm at every iterations; 1, do it.
 tol =1e-16
 reset_in_pt = 0#"Set this to 1 to get diffrenet initial points, every time."
-dis=1#00000
+
 
 
 lb=[]
@@ -25,6 +25,9 @@ elseif solver==6
 elseif solver==7
     @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= secantShermanWoodbury_alg(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
     lb = ["Secant_INV"]
+elseif solver==5
+    @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= H_secant_alg(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
+    lb = ["H_Secant"]
 elseif  solver==8
     @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= Broyden(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
     lb = ["Broyden"]

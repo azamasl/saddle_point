@@ -9,11 +9,11 @@ compId = 3
 c1 = 1e-4#Armijo parameter
 do_ls = 1# 1: do line search, 2: use constant stepsize
 stepsize = 0.01
-max_it = 100#0.5*1e3
-prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
-tol =1e-14
+max_it =20#0.5*1e3
+prt = 1 # 0 don't print grad norm at every iterations; 1, do it.
+tol =1e-16
 reset_in_pt = 0#"Set this to 1 to get diffrenet initial points, every time."
-dis=1#00000
+
 
 #"The plot package seems to be unstable and I could not get plotting 3 functions to work."
 fun_num = 2
@@ -33,13 +33,13 @@ elseif compId ==3
     funs[2]=secantShermanWoodbury_alg
     lb = ["Secant" "Secant_INV"]
 elseif compId ==4
-    funs[1]=secantShermanWoodbury_alg
-    funs[2]=Broyden
-    lb = ["Secant_INV"  "Broyden"]
+    funs[1]=Broyden
+    funs[2]=secantShermanWoodbury_alg
+    lb = ["Broyden" "Secant_INV"]
 else
 end
 
-println("This is a dummy print and shouldn't be printed. For some reason my first print starting from here is not showing up. ")
+#println("This is a dummy print and shouldn't be printed. For some reason my first print starting from here is not showing up. ")
 let
     V = [] # Can contain anything
     #V = Array{Float64, 2}[] # Vector of Array{Float64,2}
@@ -59,7 +59,7 @@ end
 l1 = size(nfs[1],1)
 l2 = size(nfs[2],1)
 plot(range(1,l1,step=1), nfs[1],yscale = :log10, label = lb[1])
-plot!(range(1,l2,step=1), nfs[2],yscale = :log10,label = lb[2], title = "log-scale plot of ||F|| at every iteration")
+plot!(range(1,l2,step=1), nfs[2],yscale = :log10,label = lb[2], ylabel = "log ||F||", title = string(TYPE,"m = $m, n=$n"))
 #savefig("sample_plots/Name.png")
 # plt = plot(V,
 # ylabel = "Norm F",

@@ -16,22 +16,29 @@ include("solvers.jl")
     #stepsize: stepsize in solver 3
     #tol: gradient tolerance
 
-    ran_seed=2243#15
-    prob_type=1
-    m,n = 69,23
+    #very different for sec and sec_inv
+    ran_seed=133335#15
+    prob_type=0
+    m,n = 70,70
 
     # On this Sec_inv returns NAN
     # ran_seed=2243#15
     # prob_type=0
     # m,n = 69,23
 
-    # for the following setting sec and sec_inv are identical.
+    # # for the following setting sec and sec_inv are identical.
     # ran_seed=221543#15
     # prob_type=1
     # m,n = 29,20
+
+    # ran_seed=25
+    # prob_type=1
+    # m,n = 200,156
+
+    dis=1#00000
     ###################################
     Random.seed!(ran_seed);
-
+    TYPE=""
     A = randn(m,n)
     B = zeros(n,n)
     C = zeros(m,m)
@@ -39,8 +46,10 @@ include("solvers.jl")
         println("The Problem is convex-concave")
         B = random_PSD(n)
         C = random_PSD(m)
+        TYPE="convex-concave,"
     else
         println("The Problem is bilinear")
+        TYPE = "bilinear,"
     end
     xstar = randn(n)
     ystar = randn(m)
