@@ -309,7 +309,7 @@ end
 
 
 #######################################
-function secantShermanWoodbury_alg(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls)# gamma is the fixed stepsize
+function secantShermanWoodbury_alg2(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0
     println("################ Using Secant Updating with Sherman Woodbury Identity with M = I")
     if inpt==1
@@ -324,9 +324,6 @@ function secantShermanWoodbury_alg(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls)# ga
     sizezeroBlock = size(sp.A)
     J = [eye1       zeroBlock'
         zeroBlock      -eye2]
-
-    J2 = [zeros(size(sp.B))      Matrix{Float64}(I, size(sp.A))'
-            Matrix{Float64}(I, size(sp.A))     zeros(size(sp.C))]
     eye = Matrix{Float64}(I, size(J))
     iter=0
     #D = eye
@@ -390,7 +387,7 @@ function secantShermanWoodbury_alg(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls)# ga
 
         #r = Y - D*s # here Ds is just gamma*F_old
         "since Ds=-stepsize*F_old we get"
-        
+
         r = Y +gama*F_old
 
         ns2 = LinearAlgebra.norm(s)^2
@@ -398,13 +395,10 @@ function secantShermanWoodbury_alg(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls)# ga
         Jr = J*r
         α = s'*Jr
         a = r - α*Js/ns2
-        HJs = H*Js
-        denom = ns2 + Jr'*HJs
-        println("display ns2 = $ns2 ")
-        println("Ainv denom =$denom ")
-        Ainv = H - (HJs*Jr'*H)/(ns2 + Jr'*HJs)
-        Ainva = Ainv*a
-        H = Ainv - (Ainva*s'*Ainv)/(ns2 + s'*Ainva)
+        Ha = H*a
+        Ainv = H - (Ha*s'*H)/(ns2 +s'*Ha )
+        AinvJs = Ainv*Js
+        H = Ainv - (AinvJs*Jr'*Ainv)/(ns2 + Jr'*AinvJs)
 
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
@@ -422,6 +416,12 @@ end
 
 
 
+
+
+
+
+#######################################
+# NOT calling these functions.
 #######################################
 function H_secant_alg(x,y,obj,gama,sp, itNum,prt,inpt, use_ls)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0

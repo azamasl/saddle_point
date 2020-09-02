@@ -5,13 +5,13 @@ using LinearAlgebra, Convex, Random,CPUTime, Plots
 include("problem_settings.jl")
 
 "compare 1: Sec&Broy, 2:Sec&EGM, 3:Sec&Sec_INV, 4:Sec_INV&Broy"
-compId = 3
+compId = 4
 c1 = 1e-4#Armijo parameter
 do_ls = 1# 1: do line search, 2: use constant stepsize
 stepsize = 0.01
-max_it =20#0.5*1e3
+max_it =500#0.5*1e3
 prt = 1 # 0 don't print grad norm at every iterations; 1, do it.
-tol =1e-16
+tol =1e-12
 reset_in_pt = 0#"Set this to 1 to get diffrenet initial points, every time."
 
 
@@ -30,11 +30,11 @@ elseif compId == 2
     lb = ["Secant" "EGM"]
 elseif compId ==3
     funs[1]=secantUpdate_alg
-    funs[2]=secantShermanWoodbury_alg
+    funs[2]=secantShermanWoodbury_alg2
     lb = ["Secant" "Secant_INV"]
 elseif compId ==4
     funs[1]=Broyden
-    funs[2]=secantShermanWoodbury_alg
+    funs[2]=secantShermanWoodbury_alg2
     lb = ["Broyden" "Secant_INV"]
 else
 end

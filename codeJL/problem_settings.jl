@@ -17,11 +17,11 @@ include("solvers.jl")
     #tol: gradient tolerance
 
     #very different for sec and sec_inv
-    ran_seed=133335#15
-    prob_type=0
-    m,n = 70,70
+    # ran_seed=103#15
+    # prob_type=0
+    # m,n = 59,59
 
-    # On this Sec_inv returns NAN
+    # On this Sec_inv (first imp) returns NAN
     # ran_seed=2243#15
     # prob_type=0
     # m,n = 69,23
@@ -31,9 +31,9 @@ include("solvers.jl")
     # prob_type=1
     # m,n = 29,20
 
-    # ran_seed=25
-    # prob_type=1
-    # m,n = 200,156
+    ran_seed=25
+    prob_type=1
+    m,n = 200,156
 
     dis=1#00000
     ###################################

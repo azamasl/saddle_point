@@ -23,7 +23,7 @@ elseif solver==6
     @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= secantUpdate_alg(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
     lb = ["Secant"]
 elseif solver==7
-    @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= secantShermanWoodbury_alg(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
+    @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= secantShermanWoodbury_alg2(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
     lb = ["Secant_INV"]
 elseif solver==5
     @time @CPUtime  x_sol, y_sol,it, normFs, val, ngx, ngy= H_secant_alg(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls)
