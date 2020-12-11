@@ -31,9 +31,15 @@ include("solvers.jl")
     # prob_type=1
     # m,n = 29,20
 
-    ran_seed=25
-    prob_type=1
-    m,n = 200,156
+# the case where boryden rank-1 decreases the rank from 5 to 2
+    # ran_seed=295
+    # prob_type=0
+    # m,n = 2,3
+
+    #ran_seed=15 # The plots in the draft
+ran_seed=13335
+    prob_type=0
+    m,n = 40,50
 
     dis=1#00000
     ###################################
