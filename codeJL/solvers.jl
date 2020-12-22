@@ -9,27 +9,16 @@ function Newton_method(x,y,obj,sp)
     #Q,R = qr(Hess)
     #if min(abs(diag(R))) == 0 #cols of Hess are independent iff diag(R) has no 0
     invHess = pinv(Hess) #when Hess is invertible pinv is just inv
-    #invHess = inv(Hess)
-    #eye = Matrix{Float64}(I, size(Hess))
-    #invHess = Hess\eye
-
     iter=0
     z = [x;y]
     gz = [obj.∇xL(x,y);obj.∇yL(x,y)]
     n = size(x,1)
     m = size(y,1)
     while LinearAlgebra.norm(gz) > tol
-    #for k=1:10
         z = z -invHess*gz
         x = z[1:n]
         y = z[n+1:n+m]
         gz = [obj.∇xL(x,y);obj.∇yL(x,y)]
-        #val =obj.L(x,y)
-        #ngx = LinearAlgebra.norm(obj.∇xL(x,y))
-        #ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        # println("L = $val")
-        # println("|∇xL| = $ngx")
-        # println("|∇yL| = $ngy")
         iter=iter+1
     end
     return x,y,iter
@@ -40,22 +29,13 @@ function Resolvent_alg(x,y,obj,gamma,sp)# gamma is the fixed stepsize
     println("\n ############ Using Proximal Point ############")
     nablaF = [sp.B  sp.A'
             -sp.A    sp.C]
-
-    eye = Matrix{Float64}(I, size(nablaF))
     iter=0
-    #ngz = (LinearAlgebra.norm(obj.∇xL(x,y))^2 + LinearAlgebra.norm(obj.∇yL(x,y)^2)^0.5
     while (ngz > tol ) && iter < 5*1e2
         z = [x;y]
         F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-        z = z-gamma*pinv(eye+gamma*nablaF)*F
+        z = z-gamma*pinv(I(n+m)+gamma*nablaF)*F
         x = z[1:n]
         y = z[n+1:n+m]
-        # val =obj.L(x,y)
-        # ngx = LinearAlgebra.norm(obj.∇xL(x,y))
-        # ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        # println("L = $val")
-        # println("|∇xL| = $ngx")
-        # println("|∇yL| = $ngy")
         iter=iter+1
     end
     return x,y,iter
@@ -78,7 +58,7 @@ function Armijo_ls(x,y,obj, F, normF, dir, c1)
     in_it = 0
 
     while  normF -  normF_p < RHS && in_it < inner_max_it
-        LHS = normF -  normF_p
+        #LHS = normF -  normF_p
         #println("The left hand side  =$LHS")
         t = beta*t
         x_p = x +t*dir_x
@@ -90,11 +70,11 @@ function Armijo_ls(x,y,obj, F, normF, dir, c1)
     return t
 end
 #######################################
-function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls)
+function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls,Ftol)
     nablaF = [sp.B  sp.A'
             -sp.A    sp.C]
     eta  = 1/LinearAlgebra.norm(nablaF)
-    println("############ Extera Gradient Method ###############")
+    println("############ Extra Gradient Method ###############")
     println("EGM is using inverse of the Lipschitz constant for stepsize.")
     if inpt==1
         println("Renewing the initial point")
@@ -106,7 +86,7 @@ function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls)
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
     normF=LinearAlgebra.norm(F)
     normFAll=[]
-    while ( normF> tol ) && iter < max_it
+    while ( normF> Ftol ) && iter < max_it
         xk = x -eta*obj.∇xL(x,y)
         yk = y +eta*obj.∇yL(x,y)
 
@@ -133,20 +113,20 @@ end
 
 #######################################
 function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls, rtol)
-    #println("Inside Broyden's method")
+    println("dummy")
+    println("########### Inside Broyden's method")
     val, ngx, ngy =0,0,0
     if inpt==1
         println("Renewing the initial point")
         x = randn(n)
         y = randn(m)
     end
-    eye = Matrix{Float64}(I, (n+m,n+m))
     vec = randn(n+m)/(n+m)
     diag_PSD = LinearAlgebra.Diagonal(abs.(vec))# random diagonal psd matrix
     #diag_PSD = diag_PSD*diag_PSD
     #display(diag_PSD)
     iter=0
-    H = eye#diag_PSD#
+    H = I(m+n)#diag_PSD#
     ########## ONLY for testing purpose
     D = [sp.B  sp.A'
         -sp.A  sp.C]
@@ -164,7 +144,7 @@ function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls, rtol)
         z = [x;y]
         p = -H*F
         if(use_ls ==1)
-            println("For some reason my first print in this scope deson't come out. But when I put this, it does!")
+            #println("For some reason my first print in this scope deson't come out. But when I put this, it does!")
             gam = Armijo_ls(x,y,obj,F,normF,p,c1)
             if gam >= stepsize_tol
                 if prt==1
@@ -208,15 +188,15 @@ function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls, rtol)
 
         stH = s'*H
         stHy = stH*Y
-        println("stHy = $stHy")
+        #println("stHy = $stHy")
         sty = s'*Y
-        println("sty = $sty")
+        #println("sty = $sty")
         #rankH_Broyd = rank(H, rtol)
         #println("Before rank1-update rank(H) = $rankH_Broyd")
         H = H + ((s-H*Y)*stH)/stHy
         #H = H + ((s-H*Y)*Y')/(Y'*Y) %bad update
-        rankH_Broyd = rank(H, rtol)
-        println("After rank1-update rank(H) = $rankH_Broyd")
+        #rankH_Broyd = rank(H, rtol)
+        #println("After rank1-update rank(H) = $rankH_Broyd")
 
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
@@ -230,9 +210,6 @@ function Broyden(x,y,obj,gam,sp,itNum, prt,inpt, use_ls, rtol)
             println("L = $val")
             println("|∇xL| = $ngx")
             println("|∇yL| = $ngy")
-            #println("|x| = $nx")
-            #println("|y| = $ny")
-            #println("|H^{-1}| = $normH")
             println("#################################End of iter $iter")
         end
     end
@@ -244,27 +221,22 @@ end
 #Our secant method.
 function secant_inv(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls,rtol)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0
-    #println("Inside Inverse Secant update method")
+    println("dummmmy")
+    println("########### Inside Inverse Secant update method")
     if inpt==1
         println("Renewing the initial point")
         x = randn(n)
         y = randn(m)
     end
+    J = [I(n)       zeros(n,m)
+        zeros(m,n)     -I(m)]
+    H = I(n+m)
 
-    eye1 = Matrix{Float64}(I, size(sp.B))
-    eye2 = Matrix{Float64}(I, size(sp.C))
-    zeroBlock = zeros(size(sp.A))
-    sizezeroBlock = size(sp.A)
-    J = [eye1       zeroBlock'
-        zeroBlock      -eye2]
-    eye = Matrix{Float64}(I, size(J))
-    iter=0
-    #D = eye
-    H = eye
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
     F_old = F
     normF=LinearAlgebra.norm(F)
     normFAll=[]
+    iter=0
     while ( normF> tol ) && iter < itNum
         z = [x;y]
         p = -H*F
@@ -327,9 +299,9 @@ function secant_inv(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls,rtol)# gamma is the
         #println("Before rank2-update rank(H) = $rankH_Secant")
         denom2 =(ns2 + Jr'*AinvJs)
         H = Ainv - (AinvJs*Jr'*Ainv)/denom2
-        rankH_Secant = rank(H, rtol)
-        println("After rank2-update rank(H) = $rankH_Secant")
-        println(" |s|^2 =$ns2, denom1 = $denom1, denom2 = $denom2")
+        #rankH_Secant = rank(H, rtol)
+        #println("After rank2-update rank(H) = $rankH_Secant")
+        #println(" |s|^2 =$ns2, denom1 = $denom1, denom2 = $denom2")
 
         val =obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
@@ -457,55 +429,3 @@ function secant_dir(x,y,obj,dummy,sp, itNum,prt,inpt, use_ls, rtol)# gamma is th
     end
     return x,y,iter,normFAll, val, ngx, ngy
 end
-
-
-function secantUpdate_extra_grad_alg(x,y,obj,gamma,sp, itNum)# gamma is the fixed stepsize
-    println("\n ############ Using Secant Update With Extra Gradient ############")
-    val, ngx, ngy =0,0,0
-    eye1 = Matrix{Float64}(I, size(sp.B))
-    eye2 = Matrix{Float64}(I, size(sp.C))
-    zeroBlock = zeros(size(sp.A))
-    sizezeroBlock = size(sp.A)
-    J = [eye1       zeroBlock'
-        zeroBlock      -eye2]
-    eye = Matrix{Float64}(I, size(J))
-    iter=0
-    D = eye
-
-    xk = x -gamma*obj.∇xL(x,y)
-    yk = y +gamma*obj.∇yL(x,y)
-    Fk = [obj.∇xL(xk,yk) ; -obj.∇yL(xk,yk)]
-    F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-    normF = LinearAlgebra.norm(F)
-    while (normF > tol ) && iter < itNum
-        z = [x;y]
-        #Instead using gradeint of (x,y) use (xk,yk)
-        p = -pinv(D)*Fk
-        s = gamma*p
-        z = z+s
-        x = z[1:n]
-        y = z[n+1:n+m]
-        F_old = F
-        xk = x -gamma*obj.∇xL(x,y)
-        yk = y +gamma*obj.∇yL(x,y)
-        Fk = [obj.∇xL(xk,yk) ; -obj.∇yL(xk,yk)]
-        F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
-        Fdiff = F - F_old # Fdiff is y in my notes
-        r = Fdiff - D*s # here Ds is just gamma*F_old
-        norms2 = LinearAlgebra.norm(s)^2
-        D = D+(r*s'+(J*s)*(r'*J)-((s'*J*r)*(J*s*s'))/norms2)/norms2
-        val =obj.L(x,y)
-        ngx = LinearAlgebra.norm(obj.∇xL(x,y))
-        ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        println("L = $val")
-        println("|∇xL| = $ngx")
-        println("|∇yL| = $ngy")
-        iter=iter+1
-        println("end of iter $iter")
-    end
-    return x,y,iter, normFAll, val, ngx, ngy
-end
-
-
-###############################Line Search methods#############
-###############################################################

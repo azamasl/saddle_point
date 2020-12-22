@@ -3,15 +3,16 @@
 #Comparing different solvers
 using LinearAlgebra, Convex, Random,CPUTime, Plots
 include("problem_settings.jl")
+include("solvers.jl")
 
-"compare 1: Sec&Broy, 2:Sec&EGM, 3:Sec&Sec_INV, 4:Broy&Sec_INV"
-compId = 4
+"compare 1: Sec&Broy, 2:Sec&EGM"
+compId = 1
 c1 = 1e-4#Armijo parameter
 do_ls = 0# 1: do line search, 2: use constant stepsize
 stepsize = 0.01
-max_it =200#0.5*1e3
-prt = 1 # 0 don't print grad norm at every iterations; 1, do it.
-tol =1e-12
+max_it = 500#0.5*1e3
+prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
+tol =1e-8
 rtol = 1e-10 # eigendecomposition tolerence to get the rank.
 reset_in_pt = 0#"Set this to 1 to get diffrenet initial points, every time."
 
@@ -22,22 +23,13 @@ funs=Array{Function}(undef,fun_num) # compare 2 functions
 lb=[]
 nfs=Array{Vector}(undef,fun_num)
 if compId ==1
-    funs[1]=secant_dir
+    funs[1]=secant_inv
     funs[2]=Broyden
-    lb = ["Secant_Direct" "Broyden"]
-elseif compId == 2
-    funs[1]=secant_dir
-    funs[2]=EGM
-    lb = ["Secant_Direct" "EGM"]
-elseif compId ==3
-    funs[1]=secant_dir
-    funs[2]=secant_inv
-    lb = ["Secant" "Secant"]
-elseif compId ==4
-    funs[1]=Broyden
-    funs[2]=secant_inv
-    lb = ["Broyden" "Secant"]
+    lb = ["Secant" "Broyden"]
 else
+    funs[1]=secant_inv
+    funs[2]=EGM
+    lb = ["Secant" "EGM"]
 end
 
 #println("This is a dummy print and shouldn't be printed. For some reason my first print starting from here is not showing up. ")
@@ -60,8 +52,11 @@ end
 l1 = size(nfs[1],1)
 l2 = size(nfs[2],1)
 plot(range(1,l1,step=1), nfs[1],yscale = :log10, label = lb[1])
-plot!(range(1,l2,step=1), nfs[2],yscale = :log10,label = lb[2], ylabel = "log ||F||", title = string(TYPE," m = $m, n=$n"))
-#savefig("sample_plots/Name.png")
+plot!(range(1,l2,step=1), nfs[2],yscale = :log10,label = lb[2], xlabel = "Iteration", ylabel = "||F||", title = string(TYPE," m = $m, n=$n"))
+savefig("sample_plots/Name.png")
+
+
+
 # plt = plot(V,
 # ylabel = "Norm F",
 # yscale = :log10,

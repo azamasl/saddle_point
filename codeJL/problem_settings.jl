@@ -1,5 +1,5 @@
 include("sp_function.jl")
-include("solvers.jl")
+#include("solvers.jl")
 
 #function call_solver(prob_type, solver, ran_seed)
     #prob_type=0: bilinear
@@ -16,31 +16,18 @@ include("solvers.jl")
     #stepsize: stepsize in solver 3
     #tol: gradient tolerance
 
-    #very different for sec and sec_inv
-    # ran_seed=103#15
-    # prob_type=0
-    # m,n = 59,59
-
-    # On this Sec_inv (first imp) returns NAN
-    # ran_seed=2243#15
-    # prob_type=0
-    # m,n = 69,23
-
-    # # for the following setting sec and sec_inv are identical.
-    # ran_seed=221543#15
-    # prob_type=1
-    # m,n = 29,20
-
-# the case where boryden rank-1 decreases the rank from 5 to 2
-    # ran_seed=295
-    # prob_type=0
-    # m,n = 2,3
-
+#############Last settings#################
     #ran_seed=15 # The plots in the draft
-ran_seed=13335
+    # ran_seed=13335
+    # prob_type=0
+    # m,n = 40,50
+###############################
+    ran_seed=2588907
+    "0: random bilinear, 1: random quadratci CC, 2: random ill-cond. quadratic CC "
     prob_type=0
-    m,n = 40,50
-
+    n,m =  200,250  #200,300
+    "Reciprocal condition number"
+    rec_cond = 1e-3
     dis=1#00000
     ###################################
     Random.seed!(ran_seed);
@@ -48,14 +35,19 @@ ran_seed=13335
     A = randn(m,n)
     B = zeros(n,n)
     C = zeros(m,m)
-    if prob_type ==1#quadratic
+    if prob_type ==1        #quadratic
         println("The Problem is convex-concave")
         B = random_PSD(n)
         C = random_PSD(m)
-        TYPE="convex-concave,"
-    else
+        TYPE="quadratic convex-concave,"
+    elseif prob_type ==0   #bilinear
         println("The Problem is bilinear")
         TYPE = "bilinear,"
+    else   # ill-condined quadratic
+        B = random_PSD_cond(n, rec_cond)
+        C = random_PSD_cond(m, rec_cond)
+        A = zeros(m,n)#random_rectangle_cond(n,m, rec_cond)
+        TYPE="ill-cond. quadratic convex-concave,"
     end
     xstar = randn(n)
     ystar = randn(m)
