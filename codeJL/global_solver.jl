@@ -14,10 +14,17 @@ end
 "Uses dogleg dir in a trust-region framework"
 function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
     ################First let ∇F be constant:
-    #TODO: when problem is no longer quadratic, I would need to recomputer ∇F:
-    nabla_F = [sp.B    sp.A'
-              -sp.A    sp.C]
+    n = length(x)
+    m = length(y)
+    nabla_F = I(m+n)
+    if (m==1 && n==1)
+        nabla_F  = obj.∇F(x,y)
+    else
+        nabla_F = [sp.B    sp.A'
+                  -sp.A    sp.C]
+    end
     #eta  = 1/LinearAlgebra.norm(nablaF)
+    @show nabla_F
     val, ngx, ngy =0,0,0
     println("########### Inside the tr_dogleg method :")
     #@show cond(sp.B)
@@ -96,9 +103,12 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
             F = F_new
             append!(normFAll, normF)
             normF = LinearAlgebra.norm(F)
-            g = nabla_F'*F           #TODO: here I'm assuming nabla_F is constant, which is not the case in general
+            if (m==1 && n==1)
+                nabla_F  = obj.∇F(x,y)
+            end
+            g = nabla_F'*F
 
-            val = obj.L(x,y)
+            val = norm(obj.L(x,y))
             ngx = norm(obj.∇xL(x,y))
             ngy = norm(obj.∇yL(x,y))
             it = it+1

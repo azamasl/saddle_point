@@ -22,10 +22,10 @@ include("sp_function.jl")
     # prob_type=0
     # m,n = 40,50
 ###############################
-    ran_seed=2588907
-    "0: random bilinear, 1: random quadratci CC, 2: random ill-cond. quadratic CC "
-    prob_type=0
-    n,m =  200,250  #200,300
+    ran_seed=12#2588907
+    "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
+    prob_type=2
+    n,m =  500,400  #200,300
     "Reciprocal condition number"
     rec_cond = 1e-3
     dis=1#00000

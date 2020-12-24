@@ -29,17 +29,31 @@ function saddle_point_objective(sp::Saddle_Point)
     return ObjectiveFunction(L,∇xL,∇yL)
 end
 
-function sad_point2D()
+
+
+
+struct Obje_Fun2D
+    L::Function # objective function
+    ∇xL::Function # (sub)gradient of objective
+    ∇yL::Function # (sub)gradient of objective
+    ∇F::Function
+end
+
+function sad_point2D_objective()
     function L(x,y)
-        return  (x^2-1)*(x^2-9)+x*y -(y^2-1)*(y^2-9)
+        return  (x.^2 .- 1).*(x.^2 .- 9) .+ x.*y .- (y.^2 .- 1).*(y.^2 .- 9)
     end
     function ∇xL(x,y)
-        return 4*x^3-20*x + y
+        return 4*x.^3 .- 20*x .+ y
     end
     function ∇yL(x,y)
-        return 4*y^3-20*y + x
+        return -4*y.^3 .+ 20*y .+ x
     end
-    return ObjectiveFunction(L,∇xL,∇yL)
+    function ∇F(x,y)
+        return  [12*x'*x-20    1.
+                  -1.    12*y'*y-20]
+    end
+    return Obje_Fun2D(L,∇xL,∇yL,∇F)
 end
 
 
