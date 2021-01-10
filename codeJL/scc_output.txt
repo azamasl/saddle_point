@@ -1,0 +1,51 @@
+Uncomment the next lines to see the x^* and y^*
+The Problem is strongly convex-concave quadratic
+B_smallest_eig = valsB[1] = 0.00100003301136672
+B_largest_eig = valsB[end] = 0.08778773470508336
+C_smallest_eig = valsC[1] = 0.0010000101812195482
+C_largest_eig = valsC[end] = 0.07770485962962029
+########### Inside the tr_dogleg method :
+cond(nabla_F) = 5844.678016772532
+elapsed CPU time: 286.229694 seconds
+ 76.805229 seconds (9.32 M allocations: 79.609 GiB, 11.56% gc time)
+tr_doglec results:
+L = 2.2894902240122943
+|∇xL| = 0.33669693268811496
+|∇yL| = 0.007235127684079148
+number of iterations  = 1000
+############ Extra Gradient Method ###############
+EGM is using inverse of the Lipschitz constant for stepsize.
+elapsed CPU time: 2.512956 seconds
+  0.765583 seconds (415.88 k allocations: 238.431 MiB, 11.92% gc time)
+EGM results:
+L = -310.6026027710551
+|∇xL| = 263.32850442373285
+|∇yL| = 273.7868918321972
+number of iterations  = 1000
+dummy
+########### Inside Broyden's method
+elapsed CPU time: 45.342267 seconds
+ 11.760526 seconds (1.10 M allocations: 25.348 GiB, 19.87% gc time)
+Broyden results:
+L = 5.050799516015648e-12
+|∇xL| = 4.189741060646122e-7
+|∇yL| = 8.582044931243488e-10
+number of iterations  = 1000
+dummmmy
+########### Inside Inverse Secant update method
+elapsed CPU time: 191.753099 seconds
+ 48.990183 seconds (1.19 M allocations: 55.046 GiB, 12.53% gc time)
+local secant results:
+L = 7.980644655463719e-15
+|∇xL| = 3.934274728738311e-8
+|∇yL| = 4.2262298985696344e-8
+number of iterations  = 1000
+dummmmy
+########### Inside Inverse Secant update method
+elapsed CPU time: 183.300657 seconds
+ 46.590141 seconds (157.12 k allocations: 54.538 GiB, 12.08% gc time)
+local secant results:
+L = 5316.086162717513
+|∇xL| = 17.32637156975172
+|∇yL| = 17.159442548309833
+number of iterations  = 1000
