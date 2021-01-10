@@ -24,38 +24,56 @@ include("sp_function.jl")
 ###############################
     ran_seed=12#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
-    prob_type=2
-    n,m =  500,400  #200,300
+    prob_type=1
+    n,m =  500,400#500,400  #200,300
     "Reciprocal condition number"
     rec_cond = 1e-3
     dis=1#00000
     ###################################
     Random.seed!(ran_seed);
-    TYPE=""
-    A = randn(m,n)
-    B = zeros(n,n)
-    C = zeros(m,m)
-    if prob_type ==1        #quadratic
-        println("The Problem is convex-concave")
-        B = random_PSD(n)
-        C = random_PSD(m)
-        TYPE="quadratic convex-concave,"
-    elseif prob_type ==0   #bilinear
-        println("The Problem is bilinear")
-        TYPE = "bilinear,"
-    else   # ill-condined quadratic
-        B = random_PSD_cond(n, rec_cond)
-        C = random_PSD_cond(m, rec_cond)
-        A = zeros(m,n)#random_rectangle_cond(n,m, rec_cond)
-        TYPE="ill-cond. quadratic convex-concave,"
-    end
+
     xstar = randn(n)
     ystar = randn(m)
     println("Uncomment the next lines to see the x^* and y^* ")
     #println("\n xstar and ystar:")
     #display(xstar)
     #display(ystar)
-    sp = Saddle_Point(B,A,C,xstar,ystar)
-    obj = saddle_point_objective(sp)
     x0 = dis*randn(n)
     y0 = dis*randn(m)
+
+    TYPE=""
+    A = randn(m,n)
+    B = zeros(n,n)
+    C = zeros(m,m)
+    if prob_type ==1        #quadratic
+        println("The Problem is strongly convex-concave quadratic")
+        B = random_PD(n)
+        C = random_PD(m)
+        TYPE="Strongly convex-concave,"
+
+    elseif prob_type ==0   #bilinear
+        println("The Problem is bilinear")
+        TYPE = "Bilinear,"
+    else   # ill-condined quadratic
+        B = random_PSD_cond(n, rec_cond)
+        C = random_PSD_cond(m, rec_cond)
+        A = zeros(m,n)#random_rectangle_cond(n,m, rec_cond)
+        TYPE="Ill-cond. quadratic convex-concave,"
+    end
+
+    sp  = Saddle_Point(B,A,C,xstar,ystar)
+    obj = saddle_point_objective(sp)
+
+    if prob_type ==1
+        nabla_F  = obj.∇F
+        #nabF_eig = eigen(nabla_F)
+        #@show norm(nabF_eig.values[1])
+        #@show norm(nabF_eig.values[end])
+        #@assert norm(L_eig.values[end]) < 1E-10
+        valsB,vecsB = eigen(B)
+        @show B_smallest_eig = valsB[1]
+        @show B_largest_eig = valsB[end]
+        valsC,vecsC = eigen(C)
+        @show C_smallest_eig = valsC[1]
+        @show C_largest_eig = valsC[end]
+    end

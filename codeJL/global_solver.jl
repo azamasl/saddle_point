@@ -16,15 +16,18 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
     ################First let ∇F be constant:
     n = length(x)
     m = length(y)
+
     nabla_F = I(m+n)
     if (m==1 && n==1)
         nabla_F  = obj.∇F(x,y)
-    else
-        nabla_F = [sp.B    sp.A'
-                  -sp.A    sp.C]
+     else
+    #     nabla_F = [sp.B    sp.A'
+    #               -sp.A    sp.C]
+        nabla_F  = obj.∇F
     end
+
     #eta  = 1/LinearAlgebra.norm(nablaF)
-    @show nabla_F
+    #@show nabla_F
     val, ngx, ngy =0,0,0
     println("########### Inside the tr_dogleg method :")
     #@show cond(sp.B)

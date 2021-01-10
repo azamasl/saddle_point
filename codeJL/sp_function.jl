@@ -5,13 +5,23 @@ struct Saddle_Point
     C::Array{Float64,2} # PSD matrix
     xstar::Array{Float64,1}
     ystar::Array{Float64,1}
+    #∇F::Array{Float64,2} # PSD matrix
 end
 
 struct ObjectiveFunction
     L::Function # objective function
     ∇xL::Function # (sub)gradient of objective
     ∇yL::Function # (sub)gradient of objective
+    ∇F::Array{Float64,2}
 end
+
+struct Obje_Fun2D
+    L::Function # objective function
+    ∇xL::Function # (sub)gradient of objective
+    ∇yL::Function # (sub)gradient of objective
+    ∇F::Function
+end
+
 
 "saddle-point function L(x,y)= x'Bx+y'Ax-y'Cy with (sub)gradient ∇L(x,y)."
 function saddle_point_objective(sp::Saddle_Point)
@@ -25,18 +35,9 @@ function saddle_point_objective(sp::Saddle_Point)
     function ∇yL(x,y)
         return A*(x-xstar) - C'*(y-ystar)
     end
-
-    return ObjectiveFunction(L,∇xL,∇yL)
-end
-
-
-
-
-struct Obje_Fun2D
-    L::Function # objective function
-    ∇xL::Function # (sub)gradient of objective
-    ∇yL::Function # (sub)gradient of objective
-    ∇F::Function
+    ∇F = [sp.B    sp.A'
+          -sp.A    sp.C]
+    return ObjectiveFunction(L,∇xL,∇yL,∇F)
 end
 
 function sad_point2D_objective()
@@ -64,13 +65,29 @@ function random_sym(N)
     S = randn(N, N)
     return (S + S')/sqrt(2)
 end
+
 "Generate random PSD matrix with entries: off-diagonal entries ∼ N(0,1), diagonal entries ~ N(√n,2)"
 function random_PSD(N)
     S = randn(N, N) / (N ^ 0.25)
     S = S * S'
+    S = S/1000
     return S
 end
 
+
+"Generate random PD matrix with entries: off-diagonal entries ∼ N(0,1), diagonal entries ~ N(√n,2)"
+function random_PD(N)
+    S = randn(N, N) / (N ^ 0.25)
+    S = S * S'
+    S = S/1000
+    eig_vals, eig_vecs = eigen(S)
+    #adding 1e-2 to small eigenvalues to make sure S is PD
+    eig_vals[findall(eig_vals .< 1E-3)] =  eig_vals[findall(eig_vals .< 1E-3)] .+ 1E-3
+    #display(eig_vals)
+    S = eig_vecs*Diagonal(eig_vals)*eig_vecs'
+    #display(S)
+    return S
+end
 
 
 "Generates a uniformly random PSD matrix with the given Reciprocal Condition Mumber: rcond"

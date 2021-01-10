@@ -3,11 +3,13 @@
 # Calling an indivitual solver
 using LinearAlgebra, Convex, Random,CPUTime, Plots
 include("problem_settings.jl")
-solver = 8
+include("solvers.jl")
+
+solver = 7
 c1 = 1e-4#Armijo parameter
-do_ls = 1# 1: do line search, 2: use constant stepsize
-stepsize = 0.01
-max_it = 300#0.5*1e3
+do_ls = 0# 1: do line search, 2: use constant stepsize
+stepsize = 0.09
+max_it = 1000#0.5*1e3
 prt = 1 # 0 don't print grad norm at every iterations; 1, do it.
 tol =1e-16
 reset_in_pt = 0#"Set this to 1 to get diffrenet initial points, every time."
