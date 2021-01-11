@@ -24,7 +24,7 @@ include("sp_function.jl")
 ###############################
     ran_seed=12#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
-    prob_type=1
+    prob_type=0
     n,m =  500,400#500,400  #200,300
     "Reciprocal condition number"
     rec_cond = 1e-3
@@ -58,7 +58,7 @@ include("sp_function.jl")
         B = random_PSD_cond(n, rec_cond)
         C = random_PSD_cond(m, rec_cond)
         A = zeros(m,n)#random_rectangle_cond(n,m, rec_cond)
-        TYPE="Ill-cond. quadratic convex-concave,"
+        TYPE="Ill-conditioned,"
     end
 
     sp  = Saddle_Point(B,A,C,xstar,ystar)

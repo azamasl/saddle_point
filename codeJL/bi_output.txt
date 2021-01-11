@@ -1,0 +1,46 @@
+The Problem is bilinear
+########### Inside the tr_dogleg method :
+cond(nabla_F) = 3.784678878693269e17
+elapsed CPU time: 280.245204 seconds
+ 74.929781 seconds (9.06 M allocations: 79.584 GiB, 10.69% gc time)
+tr_doglec results:
+L = 2.320493557792961e-6
+|∇xL| = 0.006183871280030348
+|∇yL| = 0.001609185832308164
+number of iterations  = 1000
+############ Extra Gradient Method ###############
+EGM is using inverse of the Lipschitz constant for stepsize.
+elapsed CPU time: 3.069385 seconds
+  0.929931 seconds (454.38 k allocations: 241.036 MiB, 6.98% gc time)
+EGM results:
+L = -333.24677945693986
+|∇xL| = 272.5097939641017
+|∇yL| = 283.28091089462504
+number of iterations  = 1000
+dummy
+########### Inside Broyden's method
+elapsed CPU time: 38.333157 seconds
+  9.929184 seconds (1.15 M allocations: 22.206 GiB, 18.08% gc time)
+Broyden results:
+L = 1.7789811542659974e-21
+|∇xL| = 4.661821367319913e-10
+|∇yL| = 4.631524699040719e-10
+number of iterations  = 874
+dummmmy
+########### Inside Inverse Secant update method
+elapsed CPU time: 98.386988 seconds
+ 25.696614 seconds (3.70 M allocations: 27.394 GiB, 11.72% gc time)
+local secant results:
+L = -4.332186559775436e-20
+|∇xL| = 5.687202169209108e-9
+|∇yL| = 5.669176179620869e-9
+number of iterations  = 495
+dummmmy
+########### Inside Inverse Secant update method
+elapsed CPU time: 177.814666 seconds
+ 45.644949 seconds (148.14 k allocations: 49.302 GiB, 11.77% gc time)
+local secant results:
+L = -1.9058241313221758e-19
+|∇xL| = 5.2511268779481425e-9
+|∇yL| = 8.329956382137844e-9
+number of iterations  = 904
