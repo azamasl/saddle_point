@@ -1,65 +1,19 @@
-using LinearAlgebra, Convex, Random,CPUTime, JLD2
+using CPUTime, JLD2, LinearAlgebra, Convex, Random,
 include("problem_settings.jl")
 include("global_solver.jl")
 include("solvers.jl")
 
-"local alg settings"
-c1 = 1e-4#Armijo parameter
-do_ls = 1
-#stepsize = 0.01
-stepsize = 0.09#The fixed step_size, only used when do_ls = 0
-"global alg settings"
-tr = 1.0  #initial Δ
-max_tr = 100.0 #maximum allowed Δ
-eta = 0.001
-
-"general settings"
-fun_num = 5
-max_it = 1000#.5*1e3
-prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
-F_tol =1e-8
-reset_in_pt = 0
-dummy=0
-
-nfs=Array{Vector}(undef,fun_num)
-lb = ["Tr-Secant" "EGM" "Broyden" "Ls-Secant" "NoLs-Secant"]
 
 
-@time @CPUtime  x_sol, y_sol,iter, nfs[1], val, ngx, ngy,kk = tr_dogleg(x0,y0, obj,sp, max_it, prt, F_tol, tr, max_tr, eta)
-println("tr_doglec results:")
-println("L = $val")
-println("|∇xL| = $ngx")
-println("|∇yL| = $ngy")
-println("number of iterations  = $kk")
+@time @CPUtime  x_sol[1], y_sol[1],iter[1], nfs[1], val[1], ng[1] = tr_dogleg(x0,y0, obj,sp, max_it, prt, F_tol, tr, max_tr, eta)
 
-@time @CPUtime  x_sol, y_sol,iter, nfs[2], val, ngx, ngy = EGM(x0,y0,obj,dummy,sp,max_it,prt,reset_in_pt,dummy,F_tol)
-println("EGM results:")
-println("L = $val")
-println("|∇xL| = $ngx")
-println("|∇yL| = $ngy")
-println("number of iterations  = $iter")
+@time @CPUtime  x_sol[2], y_sol[2],iter[2], nfs[2], val[2], ng[2] = EGM(x0,y0,obj,dummy,sp,max_it,prt,dummy,F_tol)
 
-@time @CPUtime  x_sol, y_sol,iter, nfs[3], val, ngx, ngy = Broyden(x0,y0,obj,dummy,sp,max_it,prt,reset_in_pt,do_ls,F_tol)
-println("Broyden results:")
-println("L = $val")
-println("|∇xL| = $ngx")
-println("|∇yL| = $ngy")
-println("number of iterations  = $iter")
+@time @CPUtime  x_sol[3], y_sol[3],iter[3], nfs[3], val[3], ng[3] = Broyden(x0,y0,obj,dummy,sp,max_it,prt,do_ls,F_tol)
 
-@time @CPUtime  x_sol, y_sol,iter, nfs[4], val, ngx, ngy = secant_inv(x0,y0,obj,dummy,sp,max_it,prt,reset_in_pt,do_ls,F_tol)
-println("local secant results:")
-println("L = $val")
-println("|∇xL| = $ngx")
-println("|∇yL| = $ngy")
-println("number of iterations  = $iter")
+@time @CPUtime  x_sol[4], y_sol[4],iter[4], nfs[4], val[4], ng[4] = secant_inv(x0,y0,obj,dummy,sp,max_it,prt,do_ls,F_tol)
 
-do_ls =0
-@time @CPUtime  x_sol, y_sol,iter, nfs[5], val, ngx, ngy = secant_inv(x0,y0,obj,stepsize,sp,max_it,prt,reset_in_pt,do_ls,F_tol)
-println("local secant results:")
-println("L = $val")
-println("|∇xL| = $ngx")
-println("|∇yL| = $ngy")
-println("number of iterations  = $iter")
+@time @CPUtime  x_sol[5], y_sol[5],iter[5], nfs[5], val[5], ng[5] = secant_inv(x0,y0,obj,stepsize,sp,max_it,prt,do_ls=0,F_tol)
 
 #filname = "ws$prob_type.jld2"
-@save "ws$prob_type.jld2" nfs lb TYPE prob_type ran_seed max_it F_tol stepsize
+@save "ws$prob_type.jld2" nfs lb TYPE prob_type ran_seed max_it F_tol stepsize x_sol y_sol iter val ng

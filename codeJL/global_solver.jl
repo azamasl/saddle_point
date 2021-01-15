@@ -125,8 +125,11 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
             println("L = $val")
             println("|∇xL| = $ngx")
             println("|∇yL| = $ngy")
+            ng = sqrt(ngx^2+ngy^2)
+            println("||g|| = $ng")
             println("#################################End of iter $k")
         end
     end#while loop
-    return x,y,it,normFAll, val, ngx, ngy,k
+    ng = sqrt(ngx^2+ngy^2)
+    return x,y,it,normFAll, val, ng,k
 end

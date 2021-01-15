@@ -57,8 +57,10 @@ function sad_point2D_objective()
     return Obje_Fun2D(L,∇xL,∇yL,∇F)
 end
 
-
-
+################ random numbers form the interval
+function rand_interval(l,u)
+    return   l + (u-l)*rand()
+end
 ####################### Generating random matrices
 "Generate random matrix ∈ S^n with entries ~ N(0,1)"
 function random_sym(N)

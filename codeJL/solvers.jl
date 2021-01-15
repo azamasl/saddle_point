@@ -31,18 +31,13 @@ function Armijo_ls(x,y,obj, F, normF, dir, c1)
     return t
 end
 #######################################
-function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls,Ftol)
+function EGM(x,y,obj,dummy0,sp,max_it,prt, use_ls,Ftol)
     # nablaF = [sp.B  sp.A'
     #         -sp.A    sp.C]
     nablaF  = obj.∇F
     eta  = 1/LinearAlgebra.norm(nablaF)
     println("############ Extra Gradient Method ###############")
     println("EGM is using inverse of the Lipschitz constant for stepsize.")
-    if inpt==1
-        println("Renewing the initial point")
-        x = randn(n)
-        y = randn(m)
-    end
     val, ngx, ngy =0,0,0
     iter=0
     F = [obj.∇xL(x,y); -obj.∇yL(x,y)]
@@ -70,19 +65,15 @@ function EGM(x,y,obj,dummy0,sp,max_it,prt, inpt, use_ls,Ftol)
             println("iter $iter")
         end
     end
-    return x,y,iter,normFAll, val, ngx, ngy
+    ng = sqrt(ngx^2+ngy^2)
+    return x,y,iter,normFAll, val, ng
 end
 
 #######################################
-function Broyden(x,y,obj,dummy,sp,itNum, prt,inpt, use_ls, Ftol)
+function Broyden(x,y,obj,dummy,sp,itNum, prt,use_ls, Ftol)
     println("dummy")
     println("########### Inside Broyden's method")
     val, ngx, ngy =0,0,0
-    if inpt==1
-        println("Renewing the initial point")
-        x = randn(n)
-        y = randn(m)
-    end
     vec = randn(n+m)/(n+m)
     diag_PSD = LinearAlgebra.Diagonal(abs.(vec))# random diagonal psd matrix
     #diag_PSD = diag_PSD*diag_PSD
@@ -167,21 +158,17 @@ function Broyden(x,y,obj,dummy,sp,itNum, prt,inpt, use_ls, Ftol)
             println("#################################End of iter $iter")
         end
     end
-    return x,y,iter,normFAll, val, ngx, ngy
+    ng = sqrt(ngx^2+ngy^2)
+    return x,y,iter,normFAll, val, ng
 
 end
 
 #######################################
 #Our secant method.
-function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt,inpt, use_ls,Ftol)# gamma is the fixed stepsize
+function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt, use_ls,Ftol)# gamma is the fixed stepsize
     val, ngx, ngy =0,0,0
     println("dummmmy")
     println("########### Inside Inverse Secant update method")
-    if inpt==1
-        println("Renewing the initial point")
-        x = randn(n)
-        y = randn(m)
-    end
     J = [I(n)       zeros(n,m)
         zeros(m,n)     -I(m)]
     H = I(n+m)
@@ -263,5 +250,6 @@ function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt,inpt, use_ls,Ftol)# gamma
             println("#################################End of iter $iter")
         end
     end
-    return x,y,iter,normFAll, val, ngx, ngy
+    ng = sqrt(ngx^2+ngy^2)
+    return x,y,iter,normFAll, val, ng
 end

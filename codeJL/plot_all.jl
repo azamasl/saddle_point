@@ -1,9 +1,8 @@
 using  Plots, JLD2
 
 
-
 @load("ws0.jld2")
-#@load("test.jld2")
+
 l1 = size(nfs[1],1)
 l2 = size(nfs[2],1)
 l3 = size(nfs[3],1)

@@ -1,37 +1,45 @@
 include("sp_function.jl")
 #include("solvers.jl")
 
-#function call_solver(prob_type, solver, ran_seed)
-    #prob_type=0: bilinear
-    #prob_type=1: quadratic
-    # solver:
-    # 3: without extra-gradient step, i.e., z_{t+1} = z_t- s(s\nabla F(z_t)+I)^{-1} F(z_t), where s is the step-size
-    # 4: Newton method: z_{t+1} = z_t- s(\nabla F(z_t))^{+} F(z_t), where + is the pseudo-inverse
-    # 6: secant update alg
-    # 7: secant update with extra gradient alg
-    # 8: Broyden method
-    # 9: EGM
-    #ran_seed: random number generator seed
-    #n,m: size of the problem, x \in R^n, y \in R^m
-    #stepsize: stepsize in solver 3
-    #tol: gradient tolerance
-
-#############Last settings#################
-    #ran_seed=15 # The plots in the draft
-    # ran_seed=13335
-    # prob_type=0
-    # m,n = 40,50
-###############################
+"general settings"
     ran_seed=12#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
     prob_type=1
-    n,m =  500,400#500,400  #200,300
+    n,m =  500,400# 120,100#
     "Reciprocal condition number"
     rec_cond = 1e-3
-    dis=1#00000
-    ###################################
-    Random.seed!(ran_seed);
+    dis=1
+    fun_num = 5
+    max_it = 2000#.5*1e3
+    prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
+    F_tol =1e-8
+    reset_in_pt = 0
+    dummy=0
 
+"local alg settings"
+    c1 = 1e-4#Armijo parameter
+    do_ls = 1
+    #stepsize = 0.01
+    stepsize = 0.09#The fixed step_size, only used when do_ls = 0
+
+"global alg settings"
+    tr = 0.1  #initial Δ
+    max_tr = 0.5 #maximum allowed Δ
+    eta = 0.01
+
+nfs=Array{Vector}(undef,fun_num)
+x_sol=Array{Vector}(undef,fun_num)
+y_sol=Array{Vector}(undef,fun_num)
+iter=[]
+val =[]
+ng =[]
+lb = ["Tr-Secant" "EGM" "Broyden" "Ls-Secant" "NoLs-Secant"]
+
+
+
+
+"Creating the random problme instance"
+    Random.seed!(ran_seed);
     xstar = randn(n)
     ystar = randn(m)
     println("Uncomment the next lines to see the x^* and y^* ")
