@@ -2,15 +2,16 @@ include("sp_function.jl")
 #include("solvers.jl")
 
 "general settings"
-    ran_seed=12#2588907
+    ran_seed=102333#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
-    prob_type=1
-    n,m =  500,400# 120,100#
+    prob_type=0
+    n,m =  120,100# 120,100#
+    ts = m+n #total size
     "Reciprocal condition number"
     rec_cond = 1e-3
     dis=1
     fun_num = 5
-    max_it = 2000#.5*1e3
+    max_it = 5000#.5*1e3
     prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
     F_tol =1e-8
     reset_in_pt = 0
@@ -27,16 +28,14 @@ include("sp_function.jl")
     max_tr = 0.5 #maximum allowed Δ
     eta = 0.01
 
+lb = ["Tr-Secant" "EGM" "Broyden" "Ls-Secant" "NoLs-Secant"]
+
 nfs=Array{Vector}(undef,fun_num)
 x_sol=Array{Vector}(undef,fun_num)
 y_sol=Array{Vector}(undef,fun_num)
 iter=[]
 val =[]
 ng =[]
-lb = ["Tr-Secant" "EGM" "Broyden" "Ls-Secant" "NoLs-Secant"]
-
-
-
 
 "Creating the random problme instance"
     Random.seed!(ran_seed);

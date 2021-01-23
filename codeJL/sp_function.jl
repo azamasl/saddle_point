@@ -8,6 +8,16 @@ struct Saddle_Point
     #∇F::Array{Float64,2} # PSD matrix
 end
 
+struct fun_return
+    x_sol::Array{Float64}
+    y_sol::Array{Float64}
+    iter::Int
+    nfs::Array{Float64}
+    val::Float64
+    ng::Float64
+end
+
+
 struct ObjectiveFunction
     L::Function # objective function
     ∇xL::Function # (sub)gradient of objective

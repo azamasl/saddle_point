@@ -6,7 +6,9 @@ function getAlpha(p,q,Del)
     c = p'*p-Del^2
     #TODO: make sure the alternative alpha is checked too
     alpha = (-b + sqrt(b^2 -4*a*c))/(2*a)
-    #alpha2 = (-b - sqrt(b^2 -4*a*c))/(2*a)
+    alpha2 = (-b - sqrt(b^2 -4*a*c))/(2*a)
+    print("b = $b ")
+    println("roots (second half of the dogled direction) are : $alpha and $alpha2 ")
     return alpha
 end
 
