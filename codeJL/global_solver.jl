@@ -1,14 +1,16 @@
 "Computes the second direction length in the dogleg dirc."
 function getAlpha(p,q,Del)
     "p'p + alpha^2q'q + 2alpha p'q = Del^2  "
+    #TODO: why p and q are orthogonal?
+    #@show
+    pdotq = p'*q
     a = q'*q
-    b = 2*p'*q
+    b = 2*pdotq
     c = p'*p-Del^2
-    #TODO: make sure the alternative alpha is checked too
     alpha = (-b + sqrt(b^2 -4*a*c))/(2*a)
-    alpha2 = (-b - sqrt(b^2 -4*a*c))/(2*a)
-    print("b = $b ")
-    println("roots (second half of the dogled direction) are : $alpha and $alpha2 ")
+    #alpha2 = (-b - sqrt(b^2 -4*a*c))/(2*a)
+    #print("b = $b ")
+    #println("roots (second half of the dogled direction) are : $alpha and $alpha2 ")
     return alpha
 end
 
@@ -23,18 +25,10 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
     if (m==1 && n==1)
         nabla_F  = obj.∇F(x,y)
      else
-    #     nabla_F = [sp.B    sp.A'
-    #               -sp.A    sp.C]
         nabla_F  = obj.∇F
     end
-
-    #eta  = 1/LinearAlgebra.norm(nablaF)
-    #@show nabla_F
     val, ngx, ngy =0,0,0
     println("########### Inside the tr_dogleg method :")
-    #@show cond(sp.B)
-    #@show cond(sp.A)
-    #@show cond(sp.C)
     @show cond(nabla_F)
     J = [I(n)       zeros(n,m)
         zeros(m,n)     -I(m)]
@@ -106,7 +100,7 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
             x = z_new[1:n]
             y = z_new[n+1:n+m]
             F = F_new
-            append!(normFAll, normF)
+
             normF = LinearAlgebra.norm(F)
             if (m==1 && n==1)
                 nabla_F  = obj.∇F(x,y)
@@ -122,6 +116,7 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
                 println("the step was null")
             end
         end
+        append!(normFAll, normF)
         k=k+1
         if prt==1
             println("L = $val")
@@ -133,5 +128,5 @@ function tr_dogleg(x,y, obj,sp, itNum,prt, F_tol, Del, max_Del, eta)
         end
     end#while loop
     ng = sqrt(ngx^2+ngy^2)
-    return x,y,it,normFAll, val, ng,k
+    return x,y,k,normFAll, val, ng,it
 end

@@ -79,25 +79,27 @@ function random_sym(N)
 end
 
 "Generate random PSD matrix with entries: off-diagonal entries ∼ N(0,1), diagonal entries ~ N(√n,2)"
-function random_PSD(N)
+function random_PSD(N, scale)
     S = randn(N, N) / (N ^ 0.25)
-    S = S * S'
-    S = S/1000
+    S = scale*(S * S')#scaling S down to avoid overflow for larger matrices
     return S
 end
 
 
 "Generate random PD matrix with entries: off-diagonal entries ∼ N(0,1), diagonal entries ~ N(√n,2)"
-function random_PD(N)
+function random_PD(N,scale)
     S = randn(N, N) / (N ^ 0.25)
-    S = S * S'
-    S = S/1000
+    S = scale*(S * S')#scaling S down to avoid overflow for larger matrices
     eig_vals, eig_vecs = eigen(S)
-    #adding 1e-2 to small eigenvalues to make sure S is PD
+    #adding 1e-3 to small eigenvalues to make sure S is PD
     eig_vals[findall(eig_vals .< 1E-3)] =  eig_vals[findall(eig_vals .< 1E-3)] .+ 1E-3
-    #display(eig_vals)
     S = eig_vecs*Diagonal(eig_vals)*eig_vecs'
-    #display(S)
+    return S
+end
+
+"Generate random matrix with  entries ∼ N(0,1)"
+function random_scaled(M,N,scale)
+    S = scale*randn(M, N)
     return S
 end
 
