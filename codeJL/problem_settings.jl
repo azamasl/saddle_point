@@ -4,7 +4,7 @@ include("sp_function.jl")
 "general settings"
     ran_seed=153#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
-    prob_type=0
+    prob_type=1
     n,m =  500,400#120,100# 120,100#
     scale = 1e-1 #scaling down the entires of the random matrices to avoid overflow
     ts = m+n #total size

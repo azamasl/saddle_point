@@ -70,16 +70,21 @@ function EGM(x,y,obj,dummy0,sp,max_it,prt, use_ls,Ftol)
 end
 
 #######################################
-function Broyden(x,y,obj,dummy,sp,itNum, prt,use_ls, Ftol)
-    println("dummy")
-    println("########### Inside Broyden's method")
+function Broyden(x,y,obj,fixed_stepsz,sp,itNum, prt,use_ls, Ftol)
+    println("Broyden's method")
     val, ngx, ngy =0,0,0
-    vec = randn(n+m)/(n+m)
-    diag_PSD = LinearAlgebra.Diagonal(abs.(vec))# random diagonal psd matrix
-    #diag_PSD = diag_PSD*diag_PSD
-    #display(diag_PSD)
-    iter=0
-    H = I(m+n)#diag_PSD#
+
+    H = I(m+n)#diag_PD#
+    if prob_type==0
+        println("Borydent method with H0=I is undefined for bilinear problems. In this case we set H0 to a random diagonal PD:")
+        vec = randn(n+m)
+        vec = vec.^2
+        #making sure eich eigenvalue is at least 1E-1.
+        vec[findall(vec .< 1E-1)] =  vec[findall(vec .< 1E-1)] .+ 1E-1
+        diag_PD = Diagonal(abs.(vec))# random diagonal psd matrix
+        #display(diag_PD)
+        H = diag_PD
+    end
     ########## ONLY for testing purpose
     # D = [sp.B  sp.A'
     #     -sp.A  sp.C]
@@ -93,6 +98,7 @@ function Broyden(x,y,obj,dummy,sp,itNum, prt,use_ls, Ftol)
     F_old = F
     normF=LinearAlgebra.norm(F)
     normFAll=[]
+    iter=0
     while ( normF> Ftol ) && iter < itNum
         z = [x;y]
         p = -H*F
@@ -124,10 +130,8 @@ function Broyden(x,y,obj,dummy,sp,itNum, prt,use_ls, Ftol)
                 append!(normFAll, normF)
             end
         else # no line search
-            if prt==1
-                println("No line-search")
-            end
-            s = p
+            gam=fixed_stepsz
+            s = gam*p
             z = z+s
             x = z[1:n]
             y = z[n+1:n+m]
@@ -146,16 +150,12 @@ function Broyden(x,y,obj,dummy,sp,itNum, prt,use_ls, Ftol)
         val = obj.L(x,y)
         ngx = LinearAlgebra.norm(obj.∇xL(x,y))
         ngy = LinearAlgebra.norm(obj.∇yL(x,y))
-        nx = LinearAlgebra.norm(x)
-        ny = LinearAlgebra.norm(y)
-        normH = LinearAlgebra.norm(H)
-
         iter=iter+1
         if prt==1
             println("L = $val")
             println("|∇xL| = $ngx")
             println("|∇yL| = $ngy")
-            println("#################################End of iter $iter")
+            println("###End of iter $iter")
         end
     end
     ng = sqrt(ngx^2+ngy^2)
@@ -166,9 +166,8 @@ end
 #######################################
 #Our secant method.
 function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt, use_ls,Ftol)# gamma is the fixed stepsize
-    val, ngx, ngy =0,0,0
-    println("dummmmy")
-    println("########### Inside Inverse Secant update method")
+    val, ngx, ngy =0,0,0    
+    println("Line search secant method")
     J = [I(n)       zeros(n,m)
         zeros(m,n)     -I(m)]
     H = I(n+m)
@@ -181,7 +180,6 @@ function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt, use_ls,Ftol)# gamma is t
     while ( normF> Ftol ) && iter < itNum
         z = [x;y]
         p = -H*F
-
         if(use_ls ==1)
             gama = Armijo_ls(x,y,obj,F,normF,p,c1)
             if gama >= stepsize_tol
