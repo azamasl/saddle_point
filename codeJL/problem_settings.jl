@@ -4,14 +4,14 @@ include("sp_function.jl")
 "general settings"
     ran_seed=153#2588907
     "0: random bilinear, 1: random quadratic CC, 2: random ill-cond. quadratic CC "
-    prob_type=1
+    prob_type=0
     n,m =  500,400#120,100# 120,100#
     scale = 1e-1 #scaling down the entires of the random matrices to avoid overflow
     ts = m+n #total size
     "Reciprocal condition number"
     rec_cond = 1e-3
     dis=1
-    fun_num = 5
+    fun_num = 6
     max_it = 2000#.5*1e3
     prt = 0 # 0 don't print grad norm at every iterations; 1, do it.
     F_tol =1e-8

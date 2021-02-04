@@ -23,9 +23,9 @@ include("solvers.jl")
 # # @save "output/ws_tr_NW41_$prob_type-$ts.jld2" TYPE prob_type ran_seed max_it F_tol stepsize ret
 #
 #
-# x_sol, y_sol,iter, nfs, val, ng = Broyden(x0,y0,obj,dummy,sp,max_it,prt,do_ls,F_tol)
-# ret=fun_return(x_sol, y_sol, iter, nfs, val, ng)
-# @save "output/ws_BROYDEN_$prob_type-$ts.jld2"  TYPE prob_type ran_seed max_it F_tol stepsize ret
+x_sol, y_sol,iter, nfs, val, ng = Broyden(x0,y0,obj,dummy,sp,max_it,prt,do_ls,F_tol)
+ret=fun_return(x_sol, y_sol, iter, nfs, val, ng)
+@save "output/ws_BROYDEN_$prob_type-$ts.jld2"  TYPE prob_type ran_seed max_it F_tol stepsize ret
 #
 #
 # x_sol, y_sol,iter, nfs, val, ng = secant_inv(x0,y0,obj,stepsize,sp,max_it, prt,      0,F_tol)

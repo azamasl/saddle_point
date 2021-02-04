@@ -75,16 +75,16 @@ function Broyden(x,y,obj,fixed_stepsz,sp,itNum, prt,use_ls, Ftol)
     val, ngx, ngy =0,0,0
 
     H = I(m+n)#diag_PD#
-    if prob_type==0
-        println("Borydent method with H0=I is undefined for bilinear problems. In this case we set H0 to a random diagonal PD:")
-        vec = randn(n+m)
-        vec = vec.^2
-        #making sure eich eigenvalue is at least 1E-1.
-        vec[findall(vec .< 1E-1)] =  vec[findall(vec .< 1E-1)] .+ 1E-1
-        diag_PD = Diagonal(abs.(vec))# random diagonal psd matrix
-        #display(diag_PD)
-        H = diag_PD
-    end
+    # if prob_type==0
+    #     println("Borydent method with H0=I is undefined for bilinear problems. In this case we set H0 to a random diagonal PD:")
+    #     vec = randn(n+m)
+    #     vec = vec.^2
+    #     #making sure eich eigenvalue is at least 1E-1.
+    #     vec[findall(vec .< 1E-1)] =  vec[findall(vec .< 1E-1)] .+ 1E-1
+    #     diag_PD = Diagonal(abs.(vec))# random diagonal psd matrix
+    #     #display(diag_PD)
+    #     H = diag_PD
+    # end
     ########## ONLY for testing purpose
     # D = [sp.B  sp.A'
     #     -sp.A  sp.C]
@@ -166,7 +166,7 @@ end
 #######################################
 #Our secant method.
 function secant_inv(x,y,obj,fixed_stepsz,sp, itNum,prt, use_ls,Ftol)# gamma is the fixed stepsize
-    val, ngx, ngy =0,0,0    
+    val, ngx, ngy =0,0,0
     println("Line search secant method")
     J = [I(n)       zeros(n,m)
         zeros(m,n)     -I(m)]
